@@ -1,5 +1,5 @@
 # springcrm
-basic CRM API exercise
+basic CRM API exercise. Implemented all the endpoints, not yet tested. Oauth-2, no photos.
 
 Some queries so far:
 
