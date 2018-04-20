@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -25,6 +24,8 @@ public class Customer {
     @NotNull
     private String surname;
 
+    private String photo;
+
     @JsonIgnore 
     @CreatedBy
     private Long createdBy;
@@ -36,6 +37,11 @@ public class Customer {
     private Customer() { } // JPA only
 
     public Customer(final String name, final String surname) {
+        this.name = name;
+        this.surname = surname;
+    }
+
+    public Customer(final String name, final String surname,final String photo) {
         this.name = name;
         this.surname = surname;
     }
@@ -55,7 +61,7 @@ public class Customer {
     public Long getCreatedBy() {
         return createdBy;
     }
-    public Long getLasModifiedBy() {
+    public Long getModifiedBy() {
         return modifiedBy;
     }
 }

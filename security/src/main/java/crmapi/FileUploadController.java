@@ -19,31 +19,49 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+import java.net.URI;
+
+
+
 import crmapi.storage.StorageFileNotFoundException;
 import crmapi.storage.StorageService;
 
-@Controller
+@RestController
 public class FileUploadController {
 
     private final StorageService storageService;
+    private final CustomerRepository customerRepository;
+
 
     @Autowired
-    public FileUploadController(StorageService storageService) {
+    public FileUploadController(StorageService storageService
+                               ,CustomerRepository customerRepository) {
         this.storageService = storageService;
+        this.customerRepository= customerRepository;
     }
 
-    @GetMapping("/")
-    public String listUploadedFiles(Model model) throws IOException {
+    // @GetMapping("/images")
+    // public String listUploadedFiles(Model model) throws IOException {
 
-        model.addAttribute("files", storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-                        "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList()));
+    //     model.addAttribute("files", storageService.loadAll().map(
+    //             path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+    //                     "serveFile", path.getFileName().toString()).build().toString())
+    //             .collect(Collectors.toList()));
 
-        return "uploadForm";
-    }
+    //     return "uploadForm";
+    // }
+    // @GetMapping("/images")
+    // List<String>  listUploadedFiles(Model model) throws IOException {
 
-    @GetMapping("/files/{filename:.+}")
+    //     return storageService.loadAll().map(
+    //                path ->path.getFileName().toString()).stream().collect(Collectors.toList()));
+
+        
+    // }
+
+    @GetMapping("/images/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
@@ -52,15 +70,17 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
-    @PostMapping("/")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
-            RedirectAttributes redirectAttributes) {
+    @PostMapping("/images")
+    public void handleImageUpload(@RequestParam("file") MultipartFile file
+           ,@RequestParam("customer") String customer) {
+       
+        storageService.store(customer,file);
+        Customer customerReg = customerRepository.findByName(customer);
+        String photoPath= MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+                             "serveFile", customer+".img").build().toString();
+		customerRepository.save(new Customer(customerReg.getName(),customerReg.getSurname(),photoPath));
 
-        storageService.store(file);
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
-
-        return "redirect:/";
+        
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)

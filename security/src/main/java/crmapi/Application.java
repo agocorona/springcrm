@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
+import crmapi.storage.StorageService;
+
 
 // tag::code[]
 //
@@ -69,8 +71,11 @@ public class Application {
 
 	@Bean
 	CommandLineRunner init(AccountRepository accountRepository,
-			CustomerRepository customerRepository) {
+			CustomerRepository customerRepository,
+			StorageService storageService) {
+		storageService.init();
 		return (evt) -> Arrays.asList(
+			
 				"jhoeller,dsyer,pwebb,ogierke,rwinch,mfisher,mpollack,jlong".split(","))
 				.forEach(
 						a -> {

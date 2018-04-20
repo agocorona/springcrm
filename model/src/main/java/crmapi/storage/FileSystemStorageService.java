@@ -17,18 +17,20 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+
 @Service
 public class FileSystemStorageService implements StorageService {
 
     private final Path rootLocation;
 
     @Autowired
-    public FileSystemStorageService(StorageProperties properties) {
-        this.rootLocation = Paths.get(properties.getLocation());
+    public FileSystemStorageService() { // StorageProperties properties) {
+        this.rootLocation = Paths.get("upload-dir"); //Paths.get(properties.getLocation());
     }
 
     @Override
-    public void store(MultipartFile file) {
+    public void store(String name,MultipartFile file) {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
         try {
             if (file.isEmpty()) {
@@ -40,13 +42,18 @@ public class FileSystemStorageService implements StorageService {
                         "Cannot store file with relative path outside current directory "
                                 + filename);
             }
+
+  
+
             try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, this.rootLocation.resolve(filename),
+                ImageIO.read(inputStream).toString();
+
+                Files.copy(inputStream, this.rootLocation.resolve(name+".img"), //TODO add correct extension
                     StandardCopyOption.REPLACE_EXISTING);
             }
         }
         catch (IOException e) {
-            throw new StorageException("Failed to store file " + filename, e);
+            throw new StorageException("File is not an image or failed to store file " + filename, e);
         }
     }
 

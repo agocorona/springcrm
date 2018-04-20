@@ -18,10 +18,7 @@ import java.util.Optional;
 
 import java.util.stream.Collectors;
 
-/**
- * @author Josh Long
- * @author Greg Turnquist
- */
+
 // tag::code[]
 @RestController
 @RequestMapping("/crmapi")
@@ -101,7 +98,7 @@ class CustomerRestController {
 
 	// • An admin can also:
 	// • Create users.
-	@RequestMapping(value="/users/",method = RequestMethod.POST)
+	@RequestMapping(value="/accounts",method = RequestMethod.POST)
 	Account createUser(Principal principal,  @RequestBody Account input) {
 		this.validateUserAdmin(principal);
 		Account accountReg= 
