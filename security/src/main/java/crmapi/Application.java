@@ -74,6 +74,7 @@ public class Application {
 			CustomerRepository customerRepository,
 			StorageService storageService) {
 		storageService.init();
+
 		return (evt) -> Arrays.asList(
 			
 				"jhoeller,dsyer,pwebb,ogierke,rwinch,mfisher,mpollack,jlong".split(","))
@@ -86,6 +87,9 @@ public class Application {
 							customerRepository.save(new Customer(
 							 	    a+"Customer2", "A description"));
 						});
+
+
+		
 	}
 
 }

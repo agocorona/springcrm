@@ -24,7 +24,7 @@ public class Customer {
     @NotNull
     private String surname;
 
-    private String photo;
+    private String photo="";
 
     @JsonIgnore 
     @CreatedBy
@@ -44,6 +44,7 @@ public class Customer {
     public Customer(final String name, final String surname,final String photo) {
         this.name = name;
         this.surname = surname;
+        this.photo= photo;
     }
 
     public Long getId() {

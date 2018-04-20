@@ -117,7 +117,7 @@ class CustomerRestController {
 
 	// • Update users.
 
-	@RequestMapping(value="/accounts",method = RequestMethod.POST)
+	@RequestMapping(value="/accounts",method = RequestMethod.PUT)
     Account modifyAccount(Principal principal, @RequestBody Account input) {
 		this.validateUserAdmin(principal);
 		Optional<Account>  accountReg= accountRepository.findByUsername(input.getUsername());
