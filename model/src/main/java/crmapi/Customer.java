@@ -10,8 +10,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.persistence.EntityListeners;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Customer {
 
     @Id
@@ -26,11 +29,11 @@ public class Customer {
 
     private String photo="";
 
-    @JsonIgnore 
+    // @JsonIgnore 
     @CreatedBy
     private Long createdBy;
 
-    @JsonIgnore 
+    // @JsonIgnore 
     @LastModifiedBy
     private Long modifiedBy;
 
@@ -55,8 +58,16 @@ public class Customer {
         return name;
     }
 
+    public void setName(String name){
+        this.name= name;
+    }
+
     public String getSurname() {
         return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname= surname;
     }
 
     public Long getCreatedBy() {
@@ -66,4 +77,6 @@ public class Customer {
         return modifiedBy;
     }
 }
+
+
 

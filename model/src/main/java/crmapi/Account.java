@@ -47,6 +47,18 @@ public class Account {
         return username;
     }
 
+    void setUsername(String user){
+         this.username= user;
+    }
+
+    void setPassword(String passwd){
+    this.password= passwd;
+    }
+
+    void setAdminState(Boolean isadmin){
+         this.isAdmin= isadmin;
+    }
+
     public String getPassword() {
         return password;
     }

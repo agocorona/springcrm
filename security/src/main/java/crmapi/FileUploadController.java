@@ -75,7 +75,8 @@ public class FileUploadController {
            ,@RequestParam("customer") String customer) {
        
         storageService.store(customer,file);
-        Customer customerReg = customerRepository.findByName(customer);
+        Customer customerReg = customerRepository.findByName(customer).orElseThrow(
+                                     () -> new UserNotFoundException(customer));
         String photoPath= MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                              "serveFile", customer+".img").build().toString();
 		customerRepository.save(new Customer(customerReg.getName(),customerReg.getSurname(),photoPath));

@@ -1,18 +1,3 @@
-/*
- * Copyright 2013-2104 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package crmapi;
 
 import crmapi.Application;
@@ -38,8 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 
 
@@ -48,6 +31,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -65,9 +49,10 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;
 @SpringBootTest(classes = {Application.class, ApplicationTests.ExtraConfig.class},
 	webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationTests {
-	private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
+	private MediaType  contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
 					MediaType.APPLICATION_JSON.getSubtype(),
 					Charset.forName("utf8"));
+
 	
 	private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -75,7 +60,16 @@ public class ApplicationTests {
 
 	private Account account;
 
-	private String userName = "bdussault";
+	private String userName1 = "userName1";
+	private String userName2 = "userName2";
+	private String customerName1 = "customerName1";
+	private String customerName2 = "customerName2";
+	
+	
+	
+	private String admin = "admin";
+
+	
 
 	private List<Customer> customerList = new ArrayList<>();
 
@@ -89,51 +83,89 @@ public class ApplicationTests {
 	private AccountRepository accountRepository;
 
 	@Autowired
-    private WebApplicationContext webApplicationContext;
+	private WebApplicationContext webApplicationContext;
+	
+	@Autowired
+    void setConverters(HttpMessageConverter<?>[] converters) {
+
+        this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
+            .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+            .findAny()
+            .orElse(null);
+
+        assertNotNull("the JSON message converter must not be null",
+                this.mappingJackson2HttpMessageConverter);
+    }
 
 	@Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
         this.customerRepository.deleteAllInBatch();
-    //    this.accountRepository.deleteAllInBatch(); // not deleted since we need the user "jlong"
+        this.accountRepository.deleteAllInBatch(); // not deleted since we need the user "jlong"
 
-        this.account = accountRepository.save(new Account(userName, "password",false));
-        this.customerList.add(customerRepository.save(new Customer(userName+ "Customer1", "A description")));
-        this.customerList.add(customerRepository.save(new Customer(userName+ "Customer2", "A description")));
+		this.account = accountRepository.save(new Account(userName1, "password",false));
+		this.account = accountRepository.save(new Account(userName2, "password",false));
+		this.account = accountRepository.save(new Account(admin, "password",false));
+
+
+        this.customerList.add(customerRepository.save(new Customer(customerName1, "Surname")));
+        this.customerList.add(customerRepository.save(new Customer(customerName2, "Surname")));
 	
 	}
 
-	// @Test
-	// public void passwordGrant() {
-	// 	MultiValueMap<String, String> request = new LinkedMultiValueMap<String, String>();
-	// 	request.set("username", "jlong");
-	// 	request.set("password", "password");
-	// 	request.set("grant_type", "password");
-	// 	Map<String, Object> token = testRestTemplate
-	// 		.postForObject("/oauth/token", request, Map.class);
-	// 	assertNotNull("Wrong response: " + token, token.get("access_token"));
-	// }
 
 
 	@Test
     public void listCustomers() throws Exception {
-		String accessToken = obtainAccessToken(userName, "password");
-
+		String accessToken = obtainAccessToken(userName1, "password");
 		mockMvc.perform(get("/crmapi/customers")
 		        .header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(contentType))
+				.andExpect(jsonPath("$", hasSize(2)))
+				.andExpect(jsonPath("$[0].id", is(this.customerList.get(0).getId().intValue())))
+                .andExpect(jsonPath("$[0].name", is(customerName1)))
+                .andExpect(jsonPath("$[0].surname", is("Surname")))
+                .andExpect(jsonPath("$[1].id", is(this.customerList.get(1).getId().intValue())))
+                .andExpect(jsonPath("$[1].name", is(customerName2)))
+                .andExpect(jsonPath("$[1].surname", is("Surname")));
     }
-	// @Test
-    // public void addCustomer() throws Exception {
-	// 	String accessToken = obtainAccessToken(userName, "password");
+				
+    
+	@Test
+    public void addCustomer() throws Exception {
+		String accessToken = obtainAccessToken(userName1, "password");
+        String customerJson= json(new Customer("testCustomer", "test Surmane"));
 
-	// 	mockMvc.perform(post("/crmapi/customers")
-	// 	        .header("Authorization", "Bearer " + accessToken)
-    //             .content(json(new Customer("testCustomer", "test Surmane")))
-    //             .contentType(contentType))
-    //             .andExpect(status().isOk());
-    // }
+		this.mockMvc.perform(post("/crmapi/customers/add")
+		        .header("Authorization", "Bearer " + accessToken)
+                .contentType(contentType)
+				.content(customerJson))
+                .andExpect(status().isOk());
+	}
+
+	
+	@Test
+    public void modifyCustomer() throws Exception {
+		String accessToken = obtainAccessToken(userName2, "password");
+		Customer cust= customerRepository.findByName(customerName1).get();
+		cust.setSurname("Surname changed");
+		String customerJson= json(cust);
+
+		this.mockMvc.perform(post("/crmapi/customers/modify")
+		        .header("Authorization", "Bearer " + accessToken)
+                .contentType(contentType)
+				.content(customerJson))
+				.andExpect(status().isOk());
+
+		Long userName2Id= accountRepository.findByUsername(userName2).get().getId();
+
+        Customer newCustomerReg= customerRepository.findByName(customerName1).get();
+		assertEquals("Surname changed", newCustomerReg.getSurname());
+		assertEquals(userName2Id, newCustomerReg.getCreatedBy());
+
+	}
 
 
 	@TestConfiguration
@@ -153,10 +185,10 @@ public class ApplicationTests {
         return mockHttpOutputMessage.getBodyAsString();
 	}
 	
-	private String obtainAccessToken(String username, String password) throws Exception {
+	private String obtainAccessToken(String userName1, String password) throws Exception {
 		
 			MultiValueMap<String, String> request = new LinkedMultiValueMap<String, String>();
-			request.set("username", username);
+			request.set("username", userName1);
 			request.set("password", password);
 			request.set("grant_type", "password");
 			Map<String, String> token = testRestTemplate

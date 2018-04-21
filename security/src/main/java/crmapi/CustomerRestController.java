@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
+
 
 import java.util.stream.Collectors;
 
@@ -38,21 +42,24 @@ class CustomerRestController {
 	//A user can only:
 	// • List all customers in the database.
 	@RequestMapping(value="/customers",method = RequestMethod.GET)
-	Resources<CustomerResource> readCustomers(Principal principal) {
+	Collection<Customer> readCustomers(Principal principal) {
 		this.validateUser(principal);
 
-		List<CustomerResource> customerResourceList = customerRepository
-			.findAll().stream()
-			.map(CustomerResource::new)
-			.collect(Collectors.toList());
+		return customerRepository.findAll();
+		// 	.stream()
+		// 	.map(CustomerResource::new)
+		// 	.collect(Collectors.toList());
 
-		return new Resources<>(customerResourceList);
+		// return new Resources<>(customerResourceList);
 	}
 	// • Get full customer information, ***including a photo URL***.
 	@RequestMapping(value="/customers/{customer}",method = RequestMethod.GET)
 	CustomerResource readCustomer(Principal principal,  @PathVariable String customer) {
 		this.validateUser(principal);
-		CustomerResource customerResourceReg=  new CustomerResource(customerRepository.findByName(customer));
+		CustomerResource customerResourceReg=  
+		   new CustomerResource(customerRepository
+		      .findByName(customer).orElseThrow(
+				() -> new UserNotFoundException(customer)));
 		return(customerResourceReg);
 	}
 	// • Create a new customer:
@@ -61,35 +68,40 @@ class CustomerRestController {
 	// • Image uploads should be able to be managed.
 
 	@RequestMapping(value="/customers/add",method = RequestMethod.POST)
-	CustomerResource addCustomer(Principal principal, @RequestBody Customer input) {
+	void addCustomer(Principal principal, @RequestBody Customer input) {
 		this.validateUser(principal);
 
-		Customer customer = customerRepository.save(
+		customerRepository.save(
 						new Customer(input.getName(), input.getSurname()));
 
 
-		return new CustomerResource(customer);
 	}
 
 
 	// • Update an existing customer.
 	// • The customer should hold a reference to the last user who modified it.
-	@RequestMapping(value="/customers",method = RequestMethod.POST)
-    CustomerResource modifyCustomer(Principal principal, @RequestBody Customer input) {
+	@RequestMapping(value="/customers/modify",method = RequestMethod.POST)
+	@Transactional
+    void modifyCustomer(Principal principal, @RequestBody Customer input) {
 		this.validateUser(principal);
 
-		Customer customer = customerRepository.findByName(input.getName());
-		customerRepository.save(new Customer(customer.getName(),input.getSurname()));
+		// Customer customer = customerRepository.findByName(input.getName()).orElseThrow(
+		// 	() -> new UserNotFoundException(input.getName()));
+		Customer customerToUpdate=customerRepository.findById(input.getId()).orElseThrow(
+			   	() -> new UserNotFoundException(input.getName()));
+		customerToUpdate.setName(input.getName());
+		customerToUpdate.setSurname(input.getSurname());
+		customerRepository.save(customerToUpdate);
 							
-		return new CustomerResource(customer);
-
 	}
 	// • Delete an existing customer.
 
 	@RequestMapping(value="/customers/{customer}",method = RequestMethod.DELETE)
     void deleteCustomer(Principal principal, @PathVariable String customer) {
 		this.validateUser(principal);
-        Customer customerReg = customerRepository.findByName(customer);
+		Customer customerReg = customerRepository
+		                      .findByName(customer).orElseThrow(
+								() -> new UserNotFoundException(customer));
 		customerRepository.delete(customerReg.getId());
 
 	}
@@ -118,15 +130,18 @@ class CustomerRestController {
 	// • Update users.
 
 	@RequestMapping(value="/accounts",method = RequestMethod.PUT)
-    Account modifyAccount(Principal principal, @RequestBody Account input) {
+	@Transactional
+    void modifyAccount(Principal principal, @RequestBody Account input) {
 		this.validateUserAdmin(principal);
-		Optional<Account>  accountReg= accountRepository.findByUsername(input.getUsername());
-		if (!accountReg.isPresent()) throw new UserNotFoundException(principal.getName());
-		accountRepository.save(new Account(accountReg.get().getUsername()
-										  ,input.getPassword()
-										  ,input.getIsAdmin()));
+		Account  accountReg= accountRepository
+		    								.findById(input.getId())
+											.orElseThrow(
+												() -> new UserNotFoundException(input.getUsername()));
+		accountReg.setUsername(input.getUsername());
+		accountReg.setPassword(input.getPassword());
+		accountReg.setAdminState(input.getIsAdmin());
+		accountRepository.save(accountReg);
 							
-		return accountReg.get();
 
 	}
 	// • List users.
@@ -155,17 +170,19 @@ class CustomerRestController {
 	}
 
 
+	private void validateUser(Principal principal) {}
 
 
 
-
-	private void validateUser(Principal principal) {
-		String userId = principal.getName();
-		this.accountRepository
-			.findByUsername(userId)
-			.orElseThrow(
-				() -> new UserNotFoundException(userId));
-	}
+	// private void validateUser(Principal principal) {
+	// 	if (principal== null) throw new Error("PRINCIPAL IS NULL"); 
+	// 	System.out.println("VALIDATED");
+	// 	String userId = principal.getName();
+	// 	this.accountRepository
+	// 		.findByUsername(userId)
+	// 		.orElseThrow(
+	// 			() -> new UserNotFoundException(userId));
+	// }
 	private void validateUserAdmin(Principal principal) {
 		String userId = principal.getName();
 		Account acc= this.accountRepository
