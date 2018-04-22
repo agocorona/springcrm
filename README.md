@@ -1,5 +1,10 @@
 # springcrm
-basic CRM API exercise. Implemented all the endpoints, Oauth-2, testing.
+basic CRM API exercise. Implemented all the endpoints, Oauth-2.
+
+Unit test works with
+> mvn test
+
+Authentication seems not to work very well with unit tests and Oauth2. To check that  permissions and @lastModifiedBy works well, here are some curl request: 
 
 Some queries so far:
 
@@ -44,3 +49,4 @@ $ curl http://127.0.0.1:8080/crmapi/customers -H "Authorization: Bearer YOUR-TOK
 {"_embedded":{"customerResourceList":[{"customer":{"id":1,"name":"jhoellerCustomer1","surname":"A description"}},{"customer":{"id":2,"name":"jhoellerCustomer2","surname":"A description"}},{"customer":{"id":3,"name":"dsyerCustomer1","surname":"A description"}},{"customer":{"id":4,"name":"dsyerCustomer2","surname":"A description"}},{"customer":{"id":5,"name":"pwebbCustomer1","surname":"A description"}},{"customer":{"id":6,"name":"pwebbCustomer2","surname":"A description"}},{"customer":{"id":7,"name":"ogierkeCustomer1","surname":"A description"}},{"customer":{"id":8,"name":"ogierkeCustomer2","surname":"A description"}},{"customer":{"id":9,"name":"rwinchCustomer1","surname":"A description"}},{"customer":{"id":10,"name":"rwinchCustomer2","surname":"A description"}},{"customer":{"id":11,"name":"mfisherCustomer1","surname":"A description"}},{"customer":{"id":12,"name":"mfisherCustomer2","surname":"A description"}},{"customer":{"id":13,"name":"mpollackCustomer1","surname":"A description"}},{"customer":{"id":14,"name":"mpollackCustomer2","surname":"A description"}},{"customer":{"id":15,"name":"jlongCustomer1","surname":"A description"}},{"customer":{"id":16,"name":"jlongCustomer2","surname":"A description"}}]}}
 ```
 
+There is a test request that try to modify the surname of a customer. The user of the previous request "jlong" has no admin permissions so the request will be rejected. I will add more details.
