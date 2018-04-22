@@ -41,8 +41,8 @@ public class FileSystemStorageService implements StorageService {
  
 
             try (InputStream inputStream = file.getInputStream()) {
-                String str = ImageIO.read(inputStream).toString();
-                System.out.println("XXXXXXXXXXXX "+ str + "\nwriting "+ this.rootLocation.resolve(name));
+                // String str = ImageIO.read(inputStream).toString();
+                // System.out.println("XXXXXXXXXXXX "+ str + "\nwriting "+ this.rootLocation.resolve(name));
                 Files.copy(inputStream, this.rootLocation.resolve(name), 
                     StandardCopyOption.REPLACE_EXISTING);
             }
