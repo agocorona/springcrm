@@ -21,5 +21,12 @@ class CustomerControllerAdvice {
 	VndErrors userNotFoundExceptionHandler(UserNotFoundException ex) {
 		return new VndErrors("error", ex.getMessage());
 	}
+
+	@ResponseBody
+	@ExceptionHandler(CustomerNotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	VndErrors customerNotFoundExceptionHandler(CustomerNotFoundException ex) {
+		return new VndErrors("error", ex.getMessage());
+	}
 }
 // end::code[]

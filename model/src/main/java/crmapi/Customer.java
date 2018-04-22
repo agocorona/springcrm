@@ -31,11 +31,11 @@ public class Customer {
 
     // @JsonIgnore 
     @CreatedBy
-    private Long createdBy;
+    private String createdBy;
 
     // @JsonIgnore 
     @LastModifiedBy
-    private Long modifiedBy;
+    private String modifiedBy;
 
     private Customer() { } // JPA only
 
@@ -70,11 +70,18 @@ public class Customer {
         this.surname= surname;
     }
 
-    public Long getCreatedBy() {
+    public String getCreatedBy() {
         return createdBy;
     }
-    public Long getModifiedBy() {
+    public String getModifiedBy() {
         return modifiedBy;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+    void setPhoto(String photo){
+        this.photo= photo;
     }
 }
 

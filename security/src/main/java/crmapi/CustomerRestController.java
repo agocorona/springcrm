@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 
+
 // tag::code[]
 @RestController
 @RequestMapping("/crmapi")
@@ -59,7 +60,7 @@ class CustomerRestController {
 		CustomerResource customerResourceReg=  
 		   new CustomerResource(customerRepository
 		      .findByName(customer).orElseThrow(
-				() -> new UserNotFoundException(customer)));
+				() -> new CustomerNotFoundException(customer)));
 		return(customerResourceReg);
 	}
 	// • Create a new customer:
@@ -70,9 +71,8 @@ class CustomerRestController {
 	@RequestMapping(value="/customers/add",method = RequestMethod.POST)
 	void addCustomer(Principal principal, @RequestBody Customer input) {
 		this.validateUser(principal);
-
-		customerRepository.save(
-						new Customer(input.getName(), input.getSurname()));
+		customerRepository.save(input);
+						//new Customer(input.getName(), input.getSurname()));
 
 
 	}
@@ -88,9 +88,22 @@ class CustomerRestController {
 		// Customer customer = customerRepository.findByName(input.getName()).orElseThrow(
 		// 	() -> new UserNotFoundException(input.getName()));
 		Customer customerToUpdate=customerRepository.findById(input.getId()).orElseThrow(
-			   	() -> new UserNotFoundException(input.getName()));
+			   	() -> new CustomerNotFoundException(input.getName()));
 		customerToUpdate.setName(input.getName());
 		customerToUpdate.setSurname(input.getSurname());
+		customerRepository.save(customerToUpdate);
+							
+	}
+	@RequestMapping(value="/customers/modifytest/{customer}",method = RequestMethod.GET)
+	@Transactional
+    void modifyCustomer(Principal principal,@PathVariable String customer) {
+		this.validateUser(principal);
+
+		// Customer customer = customerRepository.findByName(input.getName()).orElseThrow(
+		// 	() -> new UserNotFoundException(input.getName()));
+		Customer customerToUpdate=customerRepository.findByName(customer).orElseThrow(
+			   	() -> new CustomerNotFoundException(customer));
+		customerToUpdate.setSurname("changed");
 		customerRepository.save(customerToUpdate);
 							
 	}
@@ -101,7 +114,7 @@ class CustomerRestController {
 		this.validateUser(principal);
 		Customer customerReg = customerRepository
 		                      .findByName(customer).orElseThrow(
-								() -> new UserNotFoundException(customer));
+								() -> new CustomerNotFoundException(customer));
 		customerRepository.delete(customerReg.getId());
 
 	}
@@ -110,7 +123,7 @@ class CustomerRestController {
 
 	// • An admin can also:
 	// • Create users.
-	@RequestMapping(value="/accounts",method = RequestMethod.POST)
+	@RequestMapping(value="/accounts/add",method = RequestMethod.POST)
 	Account createUser(Principal principal,  @RequestBody Account input) {
 		this.validateUserAdmin(principal);
 		Account accountReg= 
@@ -123,74 +136,68 @@ class CustomerRestController {
 		this.validateUserAdmin(principal);
 		Optional<Account>  accountReg= accountRepository.findByUsername(username);
 		if (!accountReg.isPresent()) throw new UserNotFoundException(username);
-		customerRepository.delete(accountReg.get().getId());
+		accountRepository.delete(accountReg.get().getId());
 
 	}
 
 	// • Update users.
-
-	@RequestMapping(value="/accounts",method = RequestMethod.PUT)
+	// • Also changes admin status
+	@RequestMapping(value="/accounts/modify",method = RequestMethod.POST)
 	@Transactional
     void modifyAccount(Principal principal, @RequestBody Account input) {
 		this.validateUserAdmin(principal);
 		Account  accountReg= accountRepository
-		    								.findById(input.getId())
-											.orElseThrow(
-												() -> new UserNotFoundException(input.getUsername()));
+						.findById(input.getId())
+						.orElseGet(() -> accountRepository.findByUsername(input.getUsername())
+						.orElseThrow( () -> new UserNotFoundException(input.getUsername())));
 		accountReg.setUsername(input.getUsername());
 		accountReg.setPassword(input.getPassword());
 		accountReg.setAdminState(input.getIsAdmin());
+		
 		accountRepository.save(accountReg);
 							
 
 	}
 	// • List users.
 	@RequestMapping(value="/accounts",method = RequestMethod.GET)
-	Resources<Account> readAcounts(Principal principal) {
+	Collection<Account> readAcounts(Principal principal) {
 		this.validateUserAdmin(principal);
 
 		List<Account> accountList = accountRepository
 			.findAll().stream()
 			.collect(Collectors.toList());
 
-		return  new Resources<>(accountList);
-	}
-	// • Change admin status.
-
-	@RequestMapping(value="/accounts/switch",method = RequestMethod.POST)
-    Account modifyAdminStatus(Principal principal, @RequestBody Account input) {
-		this.validateUserAdmin(principal);
-		Optional<Account>  accountReg= accountRepository.findByUsername(input.getUsername());
-		if (!accountReg.isPresent()) throw new UserNotFoundException(principal.getName());
-		boolean modified= ! accountReg.get().getIsAdmin();
-		accountRepository.save(new Account(accountReg.get().getUsername(),input.getPassword(),modified));
-							
-		return accountReg.get();
-
+		return  accountList;
 	}
 
 
-	private void validateUser(Principal principal) {}
 
 
+	// private void validateUser(Principal principal) {}
+	// private void validateUserAdmin(Principal principal) {}
 
-	// private void validateUser(Principal principal) {
-	// 	if (principal== null) throw new Error("PRINCIPAL IS NULL"); 
-	// 	System.out.println("VALIDATED");
-	// 	String userId = principal.getName();
-	// 	this.accountRepository
-	// 		.findByUsername(userId)
-	// 		.orElseThrow(
-	// 			() -> new UserNotFoundException(userId));
-	// }
+
+	private void validateUser(Principal principal) {
+		if (principal!= null){ 
+			System.out.println("VALIDATED");
+			String userId = principal.getName();
+			this.accountRepository
+				.findByUsername(userId)
+				.orElseThrow(
+					() -> new UserNotFoundException(userId));
+		}
+	}
+
 	private void validateUserAdmin(Principal principal) {
-		String userId = principal.getName();
-		Account acc= this.accountRepository
-					 .findByUsername(userId).orElseThrow(
-						() -> new UserNotFoundException(userId));
-					 
-		Boolean isAdmin= acc.getIsAdmin();
-	    if (!isAdmin) throw( new AccessDeniedException(userId));
+		if (principal!= null){
+			String userId = principal.getName();
+			Account acc= this.accountRepository
+						.findByUsername(userId).orElseThrow(
+							() -> new UserNotFoundException(userId));
+						
+			Boolean isAdmin= acc.getIsAdmin();
+			if (!isAdmin) throw( new AccessDeniedException(userId));
+		}
 	}
 }
 // end::code[]

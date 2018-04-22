@@ -24,10 +24,8 @@ public class Account {
 
 
 
-    @JsonIgnore
     private String password;
 
-    @JsonIgnore 
     private Boolean isAdmin;
 
     private Account() { } // JPA only

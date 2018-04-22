@@ -12,12 +12,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 
-import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
 
 // tag::code[]
 @Configuration
@@ -43,17 +37,19 @@ class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
 	}
 }
 
-// class SpringSecurityAuditorAware implements AuditorAware<Long> {
 
-// 	public Long getCurrentAuditor() {
+// class SpringSecurityAuditorAware implements AuditorAware<String> {
+// 	@Autowired
+// 	AccountRepository accountRepository;
+
+// 	public String getCurrentAuditor() {
   
 // 	  Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
   
 // 	  if (authentication == null || !authentication.isAuthenticated()) {
 // 		return null;
 // 	  }
-  
-// 	  return ((Account) authentication.getPrincipal()).getId();
+// 	  return ((User) authentication.getPrincipal()).getUsername();
 // 	}
 //   }
 
@@ -62,7 +58,7 @@ class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
 //   class Config {
   
 // 	@Bean
-// 	public AuditorAware<Long> auditorProvider() {
+// 	public AuditorAware<String> auditorProvider() {
 // 	  return new SpringSecurityAuditorAware();
 // 	}
 //   }

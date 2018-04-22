@@ -31,24 +31,19 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void store(String name,MultipartFile file) {
+        System.out.println("STORE");
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
+
         try {
             if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + filename);
             }
-            if (filename.contains("..")) {
-                // This is a security check
-                throw new StorageException(
-                        "Cannot store file with relative path outside current directory "
-                                + filename);
-            }
-
-  
+ 
 
             try (InputStream inputStream = file.getInputStream()) {
-                ImageIO.read(inputStream).toString();
-
-                Files.copy(inputStream, this.rootLocation.resolve(name+".img"), //TODO add correct extension
+                String str = ImageIO.read(inputStream).toString();
+                System.out.println("XXXXXXXXXXXX "+ str + "\nwriting "+ this.rootLocation.resolve(name));
+                Files.copy(inputStream, this.rootLocation.resolve(name), 
                     StandardCopyOption.REPLACE_EXISTING);
             }
         }
