@@ -136,7 +136,7 @@ tp://localhost:8080/crmapi/accounts/add
 {"id":10,"username":"newUser","password":"password","isAdmin":false}
 
 ```
-modify this user change password and make it administrator
+modify this user, change password and make it administrator
 ```
 memet@DESKTOP-NCPHB6J MINGW64 ~/Desktop/springboot/springcrm (master)
 $ curl -H "Authorization: Bearer 8b788b7e-0d79-4a4a-aaa9-17d81d0a7238" -H "Content-Type: app
@@ -158,6 +158,11 @@ delete this user
 memet@DESKTOP-NCPHB6J MINGW64 ~/Desktop/springboot/springcrm (master)
 $ curl -X DELETE -H "Authorization: Bearer 8b788b7e-0d79-4a4a-aaa9-17d81d0a7238"  http://loc
 alhost:8080/crmapi/accounts/newUser
+
+```
+verifying deletion
+
+```
 
 memet@DESKTOP-NCPHB6J MINGW64 ~/Desktop/springboot/springcrm (master)
 $ curl -H "Authorization: Bearer 8b788b7e-0d79-4a4a-aaa9-17d81d0a7238"  http://localhost:808
