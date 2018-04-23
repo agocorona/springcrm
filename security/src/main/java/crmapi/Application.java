@@ -25,7 +25,7 @@ import crmapi.storage.StorageService;
 // tag::code[]
 //
 // curl -X POST -vu android-crmapi:123456 http://localhost:8080/oauth/token -H "Accept: application/json" -d "password=password&username=jlong&grant_type=password&scope=write&client_secret=123456&client_id=android-crmapi"
-// curl -v POST http://127.0.0.1:8080/crmapi -H "Authorization: Bearer <oauth_token>""
+// curl -v POST http://127.0.0.1:8080/crmapi/customers -H "Authorization: Bearer <oauth_token>""
 
 @SpringBootApplication
 public class Application {
@@ -39,13 +39,13 @@ public class Application {
 			CustomerRepository customerRepository,
 			StorageService storageService) {
 		storageService.init();
+		accountRepository.save(new Account("admin","password",true));
 
 		return (evt) -> Arrays.asList(
-			
 				"jhoeller,dsyer,pwebb,ogierke,rwinch,mfisher,mpollack,jlong".split(","))
 				.forEach(
 						a -> {
-							Account account = accountRepository.save(new Account(a,
+							accountRepository.save(new Account(a,
 									"password",false));
 							customerRepository.save(new Customer(
 							 		a+"Customer1", "A description"));
