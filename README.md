@@ -10,7 +10,7 @@ Unit test works with
 Authentication seems not to work very well with unit tests and Oauth2. It seems that using Oauth2 with automated tests allow access permission, but principal is null, so user validation does not work, neither  @createdBy or @lastModifiedBy directives (that need principal info). Performing the same requests by hand in the console with curl works well
 
 
-```
+
 obtain access token for the user jlong:
 
 ```
