@@ -47,24 +47,7 @@ public class FileUploadController {
         this.accountRepository= accountRepository;
     }
 
-    // @GetMapping("/images")
-    // public String listUploadedFiles(Model model) throws IOException {
-
-    //     model.addAttribute("files", storageService.loadAll().map(
-    //             path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-    //                     "serveFile", path.getFileName().toString()).build().toString())
-    //             .collect(Collectors.toList()));
-
-    //     return "uploadForm";
-    // }
-    // @GetMapping("/images")
-    // List<String>  listUploadedFiles(Model model) throws IOException {
-
-    //     return storageService.loadAll().map(
-    //                path ->path.getFileName().toString()).stream().collect(Collectors.toList()));
-
-        
-    // }
+    
 
     @GetMapping("/images/{filename:.+}")
     @ResponseBody

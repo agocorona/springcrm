@@ -136,7 +136,6 @@ public class ApplicationTests {
 
 	@Test
     public void listCustomers() throws Exception {
-		//String accessToken = obtainAccessToken(userName1, "password");
 		mockMvc.perform(get("/crmapi/customers")
 		        .header("Authorization", "Bearer " + accessToken))
 				.andExpect(status().isOk())
@@ -153,7 +152,6 @@ public class ApplicationTests {
     
 	@Test
     public void addCustomer() throws Exception {
-		// String accessToken = obtainAccessToken(userName1, "password");
         String customerJson= json(new Customer("testCustomer", "test Surmane"));
 
 		this.mockMvc.perform(post("/crmapi/customers/add")
@@ -164,7 +162,6 @@ public class ApplicationTests {
 	}
 
 	public void getCustomer() throws Exception {
-		// String accessToken = obtainAccessToken(userName1, "password");
         String customerJson= json(new Customer("testCustomer", "test Surmane"));
 
 		this.mockMvc.perform(post("/crmapi/customers/"+customerName1)
@@ -194,7 +191,6 @@ public class ApplicationTests {
 
         Customer newCustomerReg= customerRepository.findByName(customerName1).get();
 		assertEquals("Surname changed", newCustomerReg.getSurname());
-		//assertEquals(userName2Id, newCustomerReg.getCreatedBy()); FAIL
 
 	}
 
